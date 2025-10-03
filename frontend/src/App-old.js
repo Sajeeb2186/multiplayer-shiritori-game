@@ -177,10 +177,10 @@ function App() {
 
   // Timer effect
   useEffect(() => {
-    if (!gameState.gameStarted || gameState.gameOver) return;
+    if (!gameState || !gameState.gameStarted || gameState.gameOver) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
+      setTimeLeft(prev => {
         if (prev <= 1) {
           handleTimeout();
           return TURN_TIME;
@@ -192,12 +192,42 @@ function App() {
     return () => clearInterval(timer);
   }, [gameState, handleTimeout]);
 
+  // Reset timer when player changes
+  useEffect(() => {
+    if (gameState && gameState.gameStarted && !gameState.gameOver) {
+      setTimeLeft(TURN_TIME);
+    }
+  }, [gameState]);
+
   // Handle Enter key
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !isValidating) {
       submitWord();
     }
   };
+
+  if (!gameState.gameStarted && !gameState.gameOver) {
+    return (
+      <div className="game-container">
+        <div className="header">
+          <h1>🎮 Multiplayer Shiritori Game</h1>
+          <p>Each word must start with the last letter of the previous word!</p>
+        </div>
+
+        {message && (
+          <div className={`message ${messageType}`}>
+            {message}
+          </div>
+        )}
+
+        <div style={{ textAlign: 'center' }}>
+          <button className="start-btn" onClick={startGame}>
+            Start New Game
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="game-container">
@@ -212,85 +242,78 @@ function App() {
         </div>
       )}
 
-      {!gameState.gameStarted ? (
-        <div style={{ textAlign: 'center' }}>
-          <button className="start-btn" onClick={startGame}>
-            Start New Game
-          </button>
+      <div className="game-board">
+        <div className={`player-section ${gameState.currentPlayer === 1 ? 'active' : ''}`}>
+          <div className="player-name">{gameState.players[0].name}</div>
+          <div className="player-score">{gameState.players[0].score}</div>
         </div>
-      ) : (
-        <>
-          <div className="game-board">
-            <div className={`player-section ${gameState.currentPlayer === 1 ? 'active' : ''}`}>
-              <div className="player-name">{gameState.players[0].name}</div>
-              <div className="player-score">{gameState.players[0].score}</div>
-            </div>
 
-            <div className="game-center">
-              <div className={`timer ${timeLeft <= 10 ? 'warning' : ''}`}>
-                {timeLeft}s
-              </div>
-              
-              {gameState.lastWord && (
-                <div className="current-word">
-                  Last word: <strong>{gameState.lastWord.toUpperCase()}</strong>
-                  <br />
-                  Next word must start with: <strong>{gameState.lastWord.slice(-1).toUpperCase()}</strong>
-                </div>
-              )}
-
-              <input
-                type="text"
-                className="word-input"
-                value={currentWord}
-                onChange={(e) => setCurrentWord(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={gameState.lastWord ? 
-                  `Enter word starting with '${gameState.lastWord.slice(-1).toUpperCase()}'` : 
-                  'Enter any word (min 4 letters)'
-                }
-                disabled={isValidating}
-              />
-              
-              <div>
-                <button 
-                  className="submit-btn" 
-                  onClick={submitWord}
-                  disabled={!currentWord.trim() || isValidating}
-                >
-                  {isValidating ? 'Validating...' : 'Submit Word'}
-                </button>
-                <button className="reset-btn" onClick={resetGame}>
-                  Reset Game
-                </button>
-              </div>
-            </div>
-
-            <div className={`player-section ${gameState.currentPlayer === 2 ? 'active' : ''}`}>
-              <div className="player-name">{gameState.players[1].name}</div>
-              <div className="player-score">{gameState.players[1].score}</div>
-            </div>
+        <div className="game-center">
+          <div className={`timer ${timeLeft <= 10 ? 'warning' : ''}`}>
+            {timeLeft}s
           </div>
-
-          <div className="word-history">
-            <h3>Word History ({gameState.usedWords.length} words)</h3>
-            <div className="word-list">
-              {gameState.usedWords.map((word, index) => (
-                <div key={index} className="word-item">
-                  {word}
-                </div>
-              ))}
-              {gameState.usedWords.length === 0 && (
-                <p style={{ textAlign: 'center', opacity: 0.7 }}>
-                  No words played yet
-                </p>
-              )}
+          
+          {gameState.lastWord && (
+            <div className="current-word">
+              Last word: <strong>{gameState.lastWord.toUpperCase()}</strong>
+              <br />
+              Next word must start with: <strong>{gameState.lastWord.slice(-1).toUpperCase()}</strong>
             </div>
+          )}
+
+          <input
+            type="text"
+            className="word-input"
+            value={currentWord}
+            onChange={(e) => setCurrentWord(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder={gameState.lastWord ? 
+              `Enter word starting with '${gameState.lastWord.slice(-1).toUpperCase()}'` : 
+              'Enter any word (min 4 letters)'
+            }
+            disabled={isValidating}
+          />
+          
+          <div>
+            <button 
+              className="submit-btn" 
+              onClick={submitWord}
+              disabled={!currentWord.trim() || isValidating}
+            >
+              {isValidating ? 'Validating...' : 'Submit Word'}
+            </button>
+            <button className="reset-btn" onClick={resetGame}>
+              Reset Game
+            </button>
           </div>
-        </>
-      )}
+        </div>
+
+        <div className={`player-section ${gameState.currentPlayer === 2 ? 'active' : ''}`}>
+          <div className="player-name">{gameState.players[1].name}</div>
+          <div className="player-score">{gameState.players[1].score}</div>
+        </div>
+      </div>
+
+      <div className="word-history">
+        <h3>Word History ({gameState.usedWords.length} words)</h3>
+        <div className="word-list">
+          {gameState.usedWords.map((word, index) => (
+            <div key={index} className="word-item">
+              {word}
+            </div>
+          ))}
+          {gameState.usedWords.length === 0 && (
+            <p style={{ textAlign: 'center', opacity: 0.7 }}>
+              No words played yet
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
+);
 }
+
+export default App;
 
 export default App;
