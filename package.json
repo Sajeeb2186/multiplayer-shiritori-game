@@ -1,0 +1,13 @@
+{
+  "name": "multiplayer-shiritori-game",
+  "version": "1.0.0",
+  "description": "Multiplayer Shiritori Game built with MERN stack",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "cd backend && npm start",
+    "install": "cd frontend && npm install && cd ../backend && npm install"
+  },
+  "keywords": ["shiritori", "game", "mern", "multiplayer"],
+  "author": "",
+  "license": "MIT"
+}

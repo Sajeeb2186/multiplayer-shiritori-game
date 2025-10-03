@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "name": "multiplayer-shiritori-game",
   "builds": [
     {
-      "src": "frontend/package.json",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "build"
+        "distDir": "frontend/build"
       }
     },
     {
@@ -23,8 +22,5 @@
       "src": "/(.*)",
       "dest": "/frontend/build/index.html"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
